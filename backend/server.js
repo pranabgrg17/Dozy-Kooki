@@ -1,19 +1,28 @@
-import express from "express"
-import cors from "cors"
-import { response } from "express"
+import express from "express";
+import cors from "cors";
+import { connectDB } from "./config/db.js";
+import foodRouter from "./routes/foodRoute.js";
 
-// app config 
-const app = express()
-const port = 4000
+// App Config
+const app = express();
+const port = 4000;
 
-// middleware
-app.use(express.json())
-app.use(cors())
+// Middleware
+app.use(express.json());
+app.use(cors());
 
-app.get("/",(req,res)=>{
-    res.send("API Working")
-})
+// DB Connection
+connectDB(); 
 
-app.listen(port,()=>{
-    console.log(`Server Started n http://localhost:${port}`)
-})
+//API endpoints 
+app.use("/api/food",foodRouter)
+app.use("/images",express.static('uploads'))//to access uploaded image to frontend
+
+app.get("/", (req, res) => {
+    res.send("API Working");
+});
+
+// Start Server
+app.listen(port, () => {
+    console.log(`Server started on http://localhost:${port}`);
+});
