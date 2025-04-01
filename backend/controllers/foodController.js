@@ -1,5 +1,5 @@
 import { response } from "express";
-import foodModel from "../models/foodModels.js";
+import foodModel from "../models/foodModel.js";
 import fs from 'fs'
 
 //add food item and logic to store product data in the database
