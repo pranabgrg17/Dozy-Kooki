@@ -9,7 +9,7 @@ const authMiddleware = async (req, res, next) => {
 
     try {
         const token_decode = jwt.verify(token, process.env.JWT_SECRET);
-        req.body.userId = token_decode.id; 
+        req.userId = token_decode.id; // correct this line
         next();
     } catch (error) {
         console.error("Auth Middleware Error:", error);

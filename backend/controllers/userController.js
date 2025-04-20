@@ -35,28 +35,34 @@ const createToken = (id) => {
 }
 
 //register user
-const registerUser = async(req,res) =>{
-    const {name,password,email} = req.body;
+const registerUser = async(req,res) => {
+    const { name, password, email, phone, role } = req.body;
+
     try {
         const exists = await userModel.findOne({email});
         if (exists) {
-            return res.json({success:false,message:"User already exists."})
+            return res.json({success:false,message:"User already exists."});
         }
 
         if (!validator.isEmail(email)) {
-            return res.json({success:false,message:"Please! Enter a valid email."})
+            return res.json({success:false,message:"Please! Enter a valid email."});
         }
 
         if (password.length < 8) {
-            return res.json({success:false,message:"Please! Enter a strong password."})
+            return res.json({success:false,message:"Please! Enter a strong password."});
         }
 
-        const salt = await bcrypt.genSalt(10)
+        // 👇 Normalize role
+        const normalizedRole = role.toLowerCase();
+
+        const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
 
         const newUser = new userModel({
             name,
             email,
+            phone,
+            role: normalizedRole,
             password: hashedPassword
         });
 
@@ -65,9 +71,10 @@ const registerUser = async(req,res) =>{
 
         res.json({ success: true, token });
     } catch (error) {
-        console.log(error);
-        res.json({ success: false, message: "Error" });
+        console.error("❌ Registration Error:", error);  
+        res.status(500).json({ success: false, message: error.message });
     }
 };
+
 
 export {loginUser,registerUser}
