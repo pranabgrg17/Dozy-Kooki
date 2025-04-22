@@ -1,9 +1,12 @@
 import express from "express";
+import { placeOrder, verifyOrder, userOrders, listOrders } from "../controllers/orderController.js";
 import authMiddleware from "../middleware/auth.js";
-import { placeOrder } from "../controllers/orderController.js";
 
-const orderRouter = express.Router();
+const router = express.Router();
 
-orderRouter.post("/place", authMiddleware, placeOrder);
+router.post("/place", authMiddleware, placeOrder);
+router.post("/verify", verifyOrder); // Public (or also use middleware if needed)
+router.get("/user", authMiddleware, userOrders);
+router.get("/admin", authMiddleware, listOrders);
 
-export default orderRouter;
+export default router;

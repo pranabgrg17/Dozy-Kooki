@@ -1,12 +1,17 @@
-import express from "express"
-import { addToCart,removeFromCart,getCart } from "../controllers/cartController.js"
-import authMiddleware from "../middleware/auth.js";
+// routes/orderRoutes.js
+import express from "express";
+import {placeOrder,verifyOrder,userOrders,listOrders,} from "../controllers/orderController.js";
 
-const cartRouter = express.Router();
+import authMiddleware from "../middleware/auth.js"; //Import updated auth middleware
 
-//three api endpoint
-cartRouter.post("/add",authMiddleware,addToCart)
-cartRouter.post("/remove",authMiddleware,removeFromCart)
-cartRouter.post("/get",authMiddleware,getCart)
+const router = express.Router();
 
-export default cartRouter;
+// ✅ Protect order placement and user/admin views
+router.post("/place", authMiddleware, placeOrder);
+router.get("/user", authMiddleware, userOrders);
+router.get("/admin", authMiddleware, listOrders);
+
+// ✅ Verification might be public or secured
+router.post("/verify", verifyOrder);
+
+export default router

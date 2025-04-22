@@ -1,16 +1,31 @@
-import mongoose from "mongoose";
+// models/orderModel.js
+
+import mongoose from 'mongoose';
 
 const orderSchema = new mongoose.Schema({
-    userId: { type: String, required: true }, // remains required
-    items: { type: Array, required: true },
-    amount: { type: Number, required: true },
-    address: { type: Object }, // If not required, remove required field
-    tableNo: { type: String },
-    status: { type: String, default: "Food Processing" },
-    date: { type: Date, default: Date.now },
-    payment: { type: Boolean, default: false }
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "users",
+        required: true,
+    },
+    address: String,
+    items: Array,
+    amount: Number,
+    tableNo: Number,
+    transaction_uuid: String,
+    status: {
+        type: String,
+        default: "Food Processing", //  Add this default
+    },
+    payment: {
+        type: Boolean,
+        default: false, //  Add this default
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now,
+    },
 });
 
-const orderModel = mongoose.models.order || mongoose.model("order", orderSchema);
-
+const orderModel = mongoose.model("orders", orderSchema);
 export default orderModel;
