@@ -1,19 +1,16 @@
 import jwt from "jsonwebtoken";
 
 const authMiddleware = (req, res, next) => {
-  const token = req.headers.token;
-
-  if (!token) {
-    return res.status(401).json({ success: false, message: "No token provided" });
-  }
-
   try {
+    const token = req.headers.token;
+    if (!token) return res.status(401).json({ success: false, message: "No token provided" });
+
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
-    req.userId = decoded.id;
+    req.userId = decoded.id; //  This is essential
     next();
-  } catch (error) {
-    console.error("Token verification failed:", error);
-    return res.status(401).json({ success: false, message: "Invalid token" });
+  } catch (err) {
+    console.log("Auth error:", err);
+    return res.status(401).json({ success: false, message: "Unauthorized" });
   }
 };
 

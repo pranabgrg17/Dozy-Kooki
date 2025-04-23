@@ -19,7 +19,7 @@ orderRouter.post("/placeorder", authMiddleware, placeOrder);
 orderRouter.post("/verify", verifyOrder);
 
 // User order history
-orderRouter.get("/user", authMiddleware, userOrders);
+orderRouter.get("/userorders", authMiddleware, userOrders);
 
 // Admin order list
 orderRouter.get("/admin", authMiddleware, listOrders);
