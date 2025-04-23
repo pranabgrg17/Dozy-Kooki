@@ -1,31 +1,51 @@
-// models/orderModel.js
-
-import mongoose from 'mongoose';
+import mongoose from "mongoose";
 
 const orderSchema = new mongoose.Schema({
-    userId: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "users",
-        required: true,
+  userId: {
+    type: mongoose.Schema.Types.ObjectId,
+    required: true,
+  },
+  items: [
+    {
+      _id: String,
+      name: String,
+      description: String,
+      price: Number,
+      image: String,
+      category: String,
+      quantity: Number,
     },
-    address: String,
-    items: Array,
-    amount: Number,
-    tableNo: Number,
-    transaction_uuid: String,
-    status: {
-        type: String,
-        default: "Food Processing", //  Add this default
-    },
-    payment: {
-        type: Boolean,
-        default: false, //  Add this default
-    },
-    createdAt: {
-        type: Date,
-        default: Date.now,
-    },
+  ],
+  amount: {
+    type: Number,
+    required: true,
+  },
+  address: {
+    firstName: String,
+    lastname: String,
+    email: String,
+    phone: String,
+  },
+  tableNo: {
+    type: Number,
+    required: true, // Keep as required since the form enforces it
+  },
+  transaction_uuid: {
+    type: String,
+    unique: true,
+  },
+  status: {
+    type: String,
+    default: "Food Processing",
+  },
+  payment: {
+    type: Boolean,
+    default: false,
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now,
+  },
 });
 
-const orderModel = mongoose.model("orders", orderSchema);
-export default orderModel;
+export default mongoose.model("Order", orderSchema);

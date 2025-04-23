@@ -1,21 +1,20 @@
-const jwt = require("jsonwebtoken");
+import jwt from "jsonwebtoken";
 
-module.exports = (req, res, next) => {
+const authMiddleware = (req, res, next) => {
   const token = req.headers.token;
 
   if (!token) {
-    return res.status(401).json({ message: "No token provided." });
+    return res.status(401).json({ success: false, message: "No token provided" });
   }
 
-  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-    if (err) {
-      // Detailed error message to help debug the issue
-      return res.status(401).json({
-        message: "Invalid or malformed token.",
-        error: err.message,
-      });
-    }
-    req.user = decoded; // Attach the decoded info to the request
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    req.userId = decoded.id;
     next();
-  });
+  } catch (error) {
+    console.error("Token verification failed:", error);
+    return res.status(401).json({ success: false, message: "Invalid token" });
+  }
 };
+
+export default authMiddleware;

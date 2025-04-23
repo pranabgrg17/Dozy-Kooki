@@ -1,38 +1,36 @@
 import express from "express";
 import cors from "cors";
-import { connectDB } from "./config/db.js";
+import dotenv from "dotenv";
+import connectDB from "./db/db.js";
+import userRouter from "./routes/userRoute.js";
 import foodRouter from "./routes/foodRoute.js";
-import userRouter from "./routes/userRoutes.js";
-import 'dotenv/config';
 import cartRouter from "./routes/cartRoute.js";
 import orderRouter from "./routes/orderRoute.js";
 
-// App Config
+// Load environment variables
+dotenv.config();
+
+// Initialize Express app
 const app = express();
-const port = 4000;
 
 // Middleware
-app.use(express.json());
 app.use(cors());
+app.use(express.json());
 
-// Serve static files from 'public/images' directory (or just 'public' if you have everything inside it)
-app.use('/images', express.static('public/images'));  // Adjusted for a specific 'images' folder if needed
+// Serve static files (e.g., images) from the public directory
+app.use(express.static("public"));
 
-// DB Connection
+// Database connection
 connectDB();
 
-// API endpoints
-app.use("/api/food", foodRouter);
+// Routes
 app.use("/api/user", userRouter);
+app.use("/api/food", foodRouter);
 app.use("/api/cart", cartRouter);
 app.use("/api/order", orderRouter);
 
-// API root endpoint
-app.get("/", (req, res) => {
-    res.send("API Working");
-});
-
-// Start Server
-app.listen(port, () => {
-    console.log(`Server started on http://localhost:${port}`);
+// Start the server
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log(`Server started on http://localhost:${PORT}`);
 });

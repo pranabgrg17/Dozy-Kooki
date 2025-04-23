@@ -1,12 +1,15 @@
 import express from "express";
-import { placeOrder, verifyOrder, userOrders, listOrders } from "../controllers/orderController.js";
+import { placeOrder, verifyOrder, userOrders, listOrders, updateStatus } from "../controllers/orderController.js";
 import authMiddleware from "../middleware/auth.js";
 
-const router = express.Router();
+const orderRouter = express.Router();
 
-router.post("/place", authMiddleware, placeOrder);
-router.post("/verify", verifyOrder); // Public (or also use middleware if needed)
-router.get("/user", authMiddleware, userOrders);
-router.get("/admin", authMiddleware, listOrders);
+// Apply authMiddleware to routes that need authentication
+orderRouter.post("/place", authMiddleware, placeOrder); // For PlaceOrder.jsx (cash payment)
+orderRouter.post("/placeorder", authMiddleware, placeOrder); // For Payment.jsx (eSewa payment)
+orderRouter.post("/verify", verifyOrder); // No auth needed if eSewa calls this
+orderRouter.get("/user", authMiddleware, userOrders); // Align with previous path
+orderRouter.get("/admin", authMiddleware, listOrders); // Align with previous path
+orderRouter.post("/status", authMiddleware, updateStatus); // Added authMiddleware for security
 
-export default router;
+export default orderRouter;

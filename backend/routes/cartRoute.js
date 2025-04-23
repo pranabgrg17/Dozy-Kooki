@@ -1,8 +1,7 @@
 // routes/orderRoutes.js
 import express from "express";
 import {placeOrder,verifyOrder,userOrders,listOrders,} from "../controllers/orderController.js";
-
-import authMiddleware from "../middleware/auth.js"; //Import updated auth middleware
+import authMiddleware from "../middleware/auth.js";
 
 const router = express.Router();
 

@@ -1,118 +1,133 @@
-import orderModel from '../models/orderModel.js';
+import orderModel from "../models/orderModel.js";
 
-/**
- * ✅ Place a new order
- * Requires authMiddleware to attach req.userId
- */
+// Place Order (for Payment.jsx)
 export const placeOrder = async (req, res) => {
-    try {
-        // Get user ID from the authenticated token
-        const userId = req.userId;
+  try {
+    const { address, items, amount, tableNo, transaction_uuid } = req.body;
+    const userId = req.body.userId || "67f5581847c44e8fdc79c00d"; // Use userId from token or default
 
-        // Destructure fields from request body
-        const { address, items, amount, tableNo, transaction_uuid } = req.body;
+    const newOrder = new orderModel({
+      userId,
+      items: items.map(item => ({
+        _id: item._id,
+        quantity: item.qty,
+      })),
+      amount,
+      address,
+      tableNo,
+      transaction_uuid,
+      status: "Food Processing",
+      payment: false,
+    });
 
-        // ✅ Validate required fields
-        if (!address || !items || !amount || !tableNo) {
-            return res.json({ success: false, message: "Missing required fields" });
-        }
+    await newOrder.save();
+    console.log("Order placed:", newOrder);
 
-        // ✅ Create new order object
-        const orderData = {
-            userId,
-            items,
-            amount,
-            tableNo,
-            address,
-            transaction_uuid,
-            status: "Food Processing", // Initial status
-            payment: false             // Payment not verified yet
-        };
-
-        // ✅ Save the order in MongoDB
-        const newOrder = new orderModel(orderData);
-        await newOrder.save();
-
-        // ✅ Respond with success and order ID
-        res.json({
-            success: true,
-            message: "Order placed successfully",
-            orderId: newOrder._id
-        });
-    } catch (error) {
-        console.error("Error placing order:", error);
-        res.json({ success: false, message: "Error placing order" });
-    }
+    return res.json({
+      success: true,
+      message: "Order placed, proceed to eSewa payment",
+      transaction_uuid,
+      orderId: newOrder._id,
+      amount,
+    });
+  } catch (error) {
+    console.log("Error placing order:", error);
+    res.json({
+      success: false,
+      message: "Error placing order",
+    });
+  }
 };
 
-/**
- * ✅ Verify payment via eSewa callback
- * This should be triggered by frontend after redirect or a webhook
- */
+// Verify Order (for eSewa payment)
 export const verifyOrder = async (req, res) => {
-    try {
-        const { transaction_uuid, status } = req.body;
+  try {
+    console.log("Verify Order Request Body:", req.body);
+    const { transaction_uuid, status } = req.body;
 
-        // Find the order using the transaction UUID
-        const order = await orderModel.findOne({ transaction_uuid });
-
-        if (!order) {
-            return res.json({ success: false, message: "Order not found" });
-        }
-
-        // ✅ Update payment and status based on eSewa result
-        if (status === "success") {
-            order.payment = true;
-            order.status = "Confirmed";
-        } else {
-            order.status = "Payment Failed";
-        }
-
-        await order.save();
-
-        res.json({
-            success: status === "success",
-            message: status === "success"
-                ? "Payment verified successfully"
-                : "Payment verification failed"
-        });
-
-    } catch (error) {
-        console.error("Error verifying order:", error);
-        res.json({ success: false, message: "Error verifying order" });
+    if (!transaction_uuid) {
+      return res.json({
+        success: false,
+        message: "Transaction UUID is required",
+      });
     }
+
+    const order = await orderModel.findOne({ transaction_uuid });
+    if (!order) {
+      return res.json({
+        success: false,
+        message: "Order not found",
+      });
+    }
+
+    // Handle different status values from eSewa
+    const successStatuses = ["success", "COMPLETE"]; // Add more as needed
+    if (successStatuses.includes(status)) {
+      order.status = "Confirmed";
+      order.payment = true;
+      await order.save();
+      console.log("Updated Order:", order);
+      return res.json({
+        success: true,
+        message: "Payment verified successfully",
+      });
+    } else {
+      return res.json({
+        success: false,
+        message: "Payment verification failed",
+      });
+    }
+  } catch (error) {
+    console.log("Error verifying order:", error);
+    res.json({
+      success: false,
+      message: "Error verifying payment",
+    });
+  }
 };
 
-/**
- * ✅ Get all orders for a specific logged-in user
- * Requires authMiddleware to attach req.userId
- */
+// Get User Orders
 export const userOrders = async (req, res) => {
-    try {
-        const userId = req.userId;
-
-        // Fetch orders for this user, sorted by most recent
-        const orders = await orderModel.find({ userId }).sort({ createdAt: -1 });
-
-        res.json({ success: true, data: orders });
-    } catch (error) {
-        console.error("Error fetching user orders:", error);
-        res.json({ success: false, message: "Error fetching user orders" });
-    }
+  try {
+    const userId = req.userId;
+    const orders = await orderModel.find({ userId }).sort({ createdAt: -1 });
+    res.json({
+      success: true,
+      data: orders,
+    });
+  } catch (error) {
+    console.log("Error fetching user orders:", error);
+    res.json({
+      success: false,
+      message: "Error fetching user orders",
+    });
+  }
 };
 
-/**
- * ✅ Admin view: List all orders
- * Requires authMiddleware to validate access
- */
+// List All Orders (for Admin)
 export const listOrders = async (req, res) => {
-    try {
-        // Fetch all orders, sorted by newest
-        const orders = await orderModel.find().sort({ createdAt: -1 });
+  try {
+    const orders = await orderModel.find().sort({ createdAt: -1 });
+    res.json({
+      success: true,
+      data: orders,
+    });
+  } catch (error) {
+    console.log("Error fetching all orders:", error);
+    res.json({
+      success: false,
+      message: "Error fetching all orders",
+    });
+  }
+};
 
-        res.json({ success: true, data: orders });
-    } catch (error) {
-        console.error("Error listing orders:", error);
-        res.json({ success: false, message: "Error listing orders" });
-    }
+// Update Order Status (for Admin)
+export const updateStatus = async (req, res) => {
+  try {
+    await orderModel.findByIdAndUpdate(req.body.orderId, { status: req.body.status });
+    res.json({ success: true, message: "Status Updated" });
+  } catch (error) {
+    console.log(error);
+    res.json({ success: false, message: "Error" });
+  }
 };
