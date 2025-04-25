@@ -1,30 +1,29 @@
+// routes/orderRoutes.js
 import express from "express";
 import {
-    placeOrder,
-    verifyOrder,
-    userOrders,
-    listOrders,
-    updateStatus
+  placeOrder,
+  verifyOrder,
+  userOrders,
+  listOrders,
+  updateStatus
 } from "../controllers/orderController.js";
-
 import authMiddleware from "../middleware/auth.js";
 
 const orderRouter = express.Router();
 
-// Cash and eSewa order placement (same controller)
+// Place order (works for both Cash and eSewa)
 orderRouter.post("/place", authMiddleware, placeOrder);
-orderRouter.post("/placeorder", authMiddleware, placeOrder);
 
-// Payment verification (from eSewa redirect)
-orderRouter.post("/verify", verifyOrder);
+// Verify eSewa payment (called after eSewa redirects to success/failure)
+orderRouter.post("/verify", authMiddleware,verifyOrder);
 
-// User order history
+// Get orders placed by the logged-in user
 orderRouter.get("/userorders", authMiddleware, userOrders);
 
-// Admin order list
-orderRouter.get("/admin", authMiddleware, listOrders);
+// Admin: Get list of all orders
+orderRouter.get("/list",  listOrders);
 
-// Update order status
-orderRouter.post("/status", authMiddleware, updateStatus);
+// Admin/User: Update order status (e.g., pending -> preparing)
+orderRouter.post("/status", updateStatus);
 
 export default orderRouter;
