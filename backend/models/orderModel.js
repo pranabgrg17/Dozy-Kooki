@@ -21,6 +21,7 @@ const orderSchema = new mongoose.Schema({
       quantity: Number,         // Quantity of this item ordered
     },
   ],
+  
 
   // Total amount of the order (required)
   amount: {

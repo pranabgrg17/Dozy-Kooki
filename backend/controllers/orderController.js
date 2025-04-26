@@ -1,6 +1,5 @@
 import foodModel from "../models/foodModel.js";
 import orderModel from "../models/orderModel.js";
-// import userModel from "../models/userModel.js"
 
 // =============================
 // 📦 Place Order (Cash/eSewa)
@@ -13,16 +12,10 @@ export const placeOrder = async (req, res) => {
     console.log('request item = ' , items)
 
 
-  
-    
     // ✅ Use userId from token (set by auth middleware)
     const userId = req.userId;
 
-  // await foodModel.find({_id : {$in : items._id}})
-
-
-
-
+  //await foodModel.find({_id : {$in : items._id}})
     // Create new order document
     const newOrder = new orderModel({
       userId,
@@ -136,7 +129,6 @@ export const userOrders = async (req, res) => {
 // =============================
 // 📋 List All Orders (Admin)
 // =============================
-// controllers/orderController.js
 export const listOrders = async (req, res) => {
   try {
     const orders = await orderModel.find({});
@@ -163,4 +155,5 @@ export const updateStatus = async (req, res) => {
     res.json({ success: false, message: "Error updating status" });
   }
 };
+
 
